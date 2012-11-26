@@ -1,1 +1,1 @@
-npm install connect js-yaml
+npm install connect js-yaml sqlite

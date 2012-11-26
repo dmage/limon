@@ -4,6 +4,7 @@ pipeline:
   - component: connect/lib/middleware/logger
     config:
       - dev
+  - component: connect/lib/middleware/query
   - component: connect/lib/middleware/static
     config:
       - public
