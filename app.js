@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 var fs = require('fs'),
+    path = require('path'),
     yaml = require('js-yaml');
 
 var configFile;
@@ -10,7 +11,9 @@ if (process.argv.length != 3) {
     configFile = process.argv[2];
 }
 
-config = require(configFile);
+absoluteConfigFile = path.resolve(process.cwd(), configFile);
+process.mainModule.filename = absoluteConfigFile;
+config = require(absoluteConfigFile);
 
 var connect = require('connect');
 var app = connect();
