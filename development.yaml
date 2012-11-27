@@ -17,3 +17,5 @@ connect:
     - component: ./handler
       config:
         database: *database
+init:
+  database: *database

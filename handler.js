@@ -1,10 +1,6 @@
 exports = module.exports = function() {
-    var sqlite3 = require('sqlite3').verbose();
-    var db = new sqlite3.Database('./write.db');
-
-    db.run("CREATE TABLE data (id INTEGER PRIMARY KEY AUTOINCREMENT, key VARCHAR(255), timestamp INTEGER, value DOUBLE)", function(error) {
-        // ...
-    });
+    var databaseFactory = require(config.database.module);
+    var db = databaseFactory(config.database.config);
 
     return function handler(req, res, next) {
         if (/^\/api\/write(\?|$)/.test(req.url)) {
