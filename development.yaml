@@ -1,11 +1,19 @@
 # vim: ts=2 sts=2 sw=2 et
-listen: 3000
-pipeline:
-  - component: connect/lib/middleware/logger
-    config:
-      - dev
-  - component: connect/lib/middleware/query
-  - component: connect/lib/middleware/static
-    config:
-      - public
-  - component: ./handler
+main: connect
+database: &database
+  module: ./database/sqlite3
+  config:
+    - "./write.db"
+connect:
+  listen: 3000
+  pipeline:
+    - component: connect/lib/middleware/logger
+      config:
+        - dev
+    - component: connect/lib/middleware/query
+    - component: connect/lib/middleware/static
+      config:
+        - public
+    - component: ./handler
+      config:
+        database: *database

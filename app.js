@@ -4,25 +4,34 @@ var fs = require('fs'),
     yaml = require('js-yaml');
 
 var configFile;
-if (process.argv.length != 3) {
-    process.stderr.write("usage: app.js <config.yaml>\n");
+if (process.argv.length < 3) {
+    process.stderr.write("usage: app.js <config.yaml> [application ...]\n");
     process.exit(1);
 } else {
     configFile = process.argv[2];
 }
+var argv = process.argv.slice(3);
 
-absoluteConfigFile = path.resolve(process.cwd(), configFile);
-process.mainModule.filename = absoluteConfigFile;
-config = require(absoluteConfigFile);
+var configPath = path.resolve(process.cwd(), configFile);
+var config = require(configPath);
 
-var connect = require('connect');
-var app = connect();
-config.pipeline.forEach(function(p) {
-    var component = p.component;
-    var config = p.config || [];
+if (typeof config.work_dir !== 'undefined') {
+    var fakePath = path.resolve('/', config.work_dir, './index.js');
+    process.mainModule.filename = fakePath;
+} else {
+    process.mainModule.filename = configPath;
+}
 
-    var middleware = require(component).apply(this, config);
-    app.use(middleware);
-});
-app.listen(config.listen);
-process.stdout.write('Started application ' + configFile + ' (listen: ' + config.listen + ")\n");
+var moduleName;
+if (argv.length > 0) {
+    moduleName = argv.shift();
+} else {
+    moduleName = config.main;
+}
+if (typeof moduleName === 'undefined') {
+    process.stderr.write('app.js: no application specified');
+    process.exit(1);
+}
+
+var module = require('./' + moduleName);
+module(argv, config[moduleName], configFile);
