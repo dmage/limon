@@ -17,5 +17,13 @@ connect:
     - component: ./handler
       config:
         database: *database
+        router:
+          - object: test.*
+            processors:
+              - ./print
+              - ./save
+          - object: .*
+            processors:
+              - ./print
 init:
   database: *database
