@@ -18,12 +18,9 @@ connect:
       config:
         database: *database
         router:
-          - object: test.*
-            processors:
-              - ./print
-              - ./save
           - object: .*
             processors:
+              - ./save
               - ./print
 init:
   database: *database

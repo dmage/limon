@@ -21,6 +21,15 @@ exports = module.exports = function(config) {
             }
 
             res.end('object: [' + object + '], signal: [' + signal + '], value: [' + value + ']\n');
+        } else if (/^\/api\/read(\?|$)/.test(req.url)) {
+            var object = req.query.object,
+                signal = req.query.signal;
+            var stmt = db.prepare("SELECT object, signal, timestamp, value FROM data WHERE object = ? AND signal = ?");
+            stmt.each(object, signal, function(err, row) {
+                res.write('object: [' + row.object + '], signal: [' + row.signal + '], timestamp: [' + row.timestamp + '], value: [' + row.value + ']\n');
+            }, function() {
+                res.end();
+            });
         } else {
             next();
         }
