@@ -23,12 +23,16 @@ exports = module.exports = function(config) {
             res.end('object: [' + object + '], signal: [' + signal + '], value: [' + value + ']\n');
         } else if (/^\/api\/read(\?|$)/.test(req.url)) {
             var object = req.query.object,
-                signal = req.query.signal;
+                signal = req.query.signal,
+                callback = req.query.callback;
             var stmt = db.prepare("SELECT object, signal, timestamp, value FROM data WHERE object = ? AND signal = ?");
+            var result = [];
             stmt.each(object, signal, function(err, row) {
-                res.write('object: [' + row.object + '], signal: [' + row.signal + '], timestamp: [' + row.timestamp + '], value: [' + row.value + ']\n');
+                //res.write('object: [' + row.object + '], signal: [' + row.signal + '], timestamp: [' + row.timestamp + '], value: [' + row.value + ']\n');
+                result.push({ timestamp: row.timestamp, value: row.value });
             }, function() {
-                res.end();
+                if (callback) { res.end(callback + '(' + JSON.stringify(result) + ')') }
+                else { res.end(JSON.stringify(result)); }
             });
         } else {
             next();
