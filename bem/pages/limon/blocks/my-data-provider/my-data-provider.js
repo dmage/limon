@@ -39,7 +39,9 @@ BEM.decl('my-data-provider', {
             dataType: 'jsonp',
             data: {
                 object: _this.params.object,
-                signal: _this.params.signal
+                signal: _this.params.signal,
+                begin: begin,
+                end: end
             },
             success: function(response) {
                 console.time('fetch');

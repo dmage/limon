@@ -24,10 +24,12 @@ exports = module.exports = function(config) {
         } else if (/^\/api\/read(\?|$)/.test(req.url)) {
             var object = req.query.object,
                 signal = req.query.signal,
+                begin = req.query.begin,
+                end = req.query.end,
                 callback = req.query.callback;
-            var stmt = db.prepare("SELECT object, signal, timestamp, value FROM data WHERE object = ? AND signal = ?");
+            var stmt = db.prepare("SELECT object, signal, timestamp, value FROM data WHERE object = ? AND signal = ? AND ? <= timestamp AND timestamp < ?");
             var result = [];
-            stmt.each(object, signal, function(err, row) {
+            stmt.each(object, signal, begin, end, function(err, row) {
                 //res.write('object: [' + row.object + '], signal: [' + row.signal + '], timestamp: [' + row.timestamp + '], value: [' + row.value + ']\n');
                 result.push({ timestamp: row.timestamp, value: row.value });
             }, function() {
