@@ -44,6 +44,32 @@ exports = module.exports = function(config) {
                 object: object,
                 signal: signal
             })));
+        } else if (/^\/(\?|$)/.test(req.url)) {
+            var BEMHTML = require('./public/_limon.bemhtml.js').BEMHTML;
+            var BEMJSON = require('./json2bemjson/limon.xjst.js').apply;
+
+            var stmt = db.prepare("SELECT object, signal FROM data GROUP BY object, signal");
+            var result = [];
+            stmt.each(function(err, row) {
+                result.push({
+                    tag: 'li',
+                    content: [
+                        {
+                            tag: 'a', 
+                            attrs: { href: "/chart?object=" + row.object + "&signal=" + row.signal },
+                            content: row.object + ": " + row.signal
+                        }
+                    ]
+                });
+            }, function() {
+                res.end(BEMHTML.apply(BEMJSON.apply({
+                    mode: "need-b-page",
+                    content: {
+                        tag: 'ul',
+                        content: result
+                    }
+                })));
+            });
         } else {
             next();
         }
