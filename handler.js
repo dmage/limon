@@ -34,6 +34,16 @@ exports = module.exports = function(config) {
                 if (callback) { res.end(callback + '(' + JSON.stringify(result) + ')') }
                 else { res.end(JSON.stringify(result)); }
             });
+        } else if (/^\/chart(\?|$)/.test(req.url)) {
+            var object = req.query.object,
+                signal = req.query.signal;
+            var BEMHTML = require('./public/_limon.bemhtml.js').BEMHTML;
+            var BEMJSON = require('./json2bemjson/limon.xjst.js').apply;
+            res.end(BEMHTML.apply(BEMJSON.apply({
+                mode: "need-b-chart",
+                object: object,
+                signal: signal
+            })));
         } else {
             next();
         }
