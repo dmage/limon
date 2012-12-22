@@ -1,11 +1,10 @@
-exports = module.exports = function sqlite3(config) {
-    var sqlite3 = require('sqlite3').verbose();
-    var db = new sqlite3.Database(config[0]);
-    db.formatSql = exports.formatSql;
-    return db;
+var sqlite3 = require('sqlite3').verbose();
+
+exports = module.exports = function sqlite3Adapter(config) {
+    this._connection = new sqlite3.Database(config[0]);
 }
 
-exports.formatSql = function formatSql(cmd) {
+exports.prototype.formatSql = function formatSql(cmd) {
     if (cmd[0] === 'create_table') {
         var props = cmd[1];
         var tableName = props.name;
@@ -30,4 +29,15 @@ exports.formatSql = function formatSql(cmd) {
                 .join(',') +
             "\n);";
     }
+}
+
+exports.prototype.query = function query(sql, bound_values, callback) {
+    this._connection.run(sql, bound_values, callback);
+}
+
+exports.prototype.each = function each(sql, bound_values, rowCallback, endCallback) {
+    this._connection.each(sql, bound_values, function(err, row) {
+        if (err) return;
+        rowCallback(row);
+    }, endCallback);
 }

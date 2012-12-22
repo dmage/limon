@@ -1,6 +1,6 @@
 exports = module.exports = function(config) {
     var databaseFactory = require(config.database.module);
-    var db = databaseFactory(config.database.config);
+    var db = new databaseFactory(config.database.config);
 
     return function handler(req, res, next) {
         if (/^\/api\/write(\?|$)/.test(req.url)) {
@@ -27,15 +27,17 @@ exports = module.exports = function(config) {
                 begin = req.query.begin,
                 end = req.query.end,
                 callback = req.query.callback;
-            var stmt = db.prepare("SELECT object, signal, timestamp, value FROM data WHERE object = ? AND signal = ? AND ? <= timestamp AND timestamp < ?");
             var result = [];
-            stmt.each(object, signal, begin, end, function(err, row) {
-                //res.write('object: [' + row.object + '], signal: [' + row.signal + '], timestamp: [' + row.timestamp + '], value: [' + row.value + ']\n');
-                result.push({ timestamp: row.timestamp, value: row.value });
-            }, function() {
-                if (callback) { res.end(callback + '(' + JSON.stringify(result) + ')') }
-                else { res.end(JSON.stringify(result)); }
-            });
+            db.each(
+                "SELECT object, signal, timestamp, value FROM data WHERE object = ? AND signal = ? AND ? <= timestamp AND timestamp < ?",
+                [object, signal, begin, end],
+                function(row) {
+                    result.push({ timestamp: row.timestamp, value: row.value });
+                }, function() {
+                    if (callback) { res.end(callback + '(' + JSON.stringify(result) + ')') }
+                    else { res.end(JSON.stringify(result)); }
+                }
+            );
         } else if (/^\/chart(\?|$)/.test(req.url)) {
             var object = req.query.object,
                 signal = req.query.signal;
@@ -49,29 +51,31 @@ exports = module.exports = function(config) {
         } else if (/^\/(\?|$)/.test(req.url)) {
             var BEMHTML = require('./public/_limon.bemhtml.js').BEMHTML;
             var BEMJSON = require('./json2bemjson/limon.xjst.js').apply;
-
-            var stmt = db.prepare("SELECT object, signal FROM data GROUP BY object, signal");
             var result = [];
-            stmt.each(function(err, row) {
-                result.push({
-                    tag: 'li',
-                    content: [
-                        {
-                            tag: 'a', 
-                            attrs: { href: "/chart?object=" + row.object + "&signal=" + row.signal },
-                            content: row.object + ": " + row.signal
+            db.each(
+                "SELECT object, signal FROM data GROUP BY object, signal", [],
+                function(row) {
+                    result.push({
+                        tag: 'li',
+                        content: [
+                            {
+                                tag: 'a',
+                                attrs: { href: "/chart?object=" + row.object + "&signal=" + row.signal },
+                                content: row.object + ": " + row.signal
+                            }
+                        ]
+                    });
+                },
+                function() {
+                    res.end(BEMHTML.apply(BEMJSON.apply({
+                        mode: "need-b-page",
+                        content: {
+                            tag: 'ul',
+                            content: result
                         }
-                    ]
-                });
-            }, function() {
-                res.end(BEMHTML.apply(BEMJSON.apply({
-                    mode: "need-b-page",
-                    content: {
-                        tag: 'ul',
-                        content: result
-                    }
-                })));
-            });
+                    })));
+                }
+            );
         } else {
             next();
         }
