@@ -46,7 +46,8 @@ exports = module.exports = function(config) {
             res.end(BEMHTML.apply(BEMJSON.apply({
                 mode: "need-b-chart",
                 object: object,
-                signal: signal
+                signal: signal,
+                period: req.query.period || 600
             })));
         } else if (/^\/(\?|$)/.test(req.url)) {
             var BEMHTML = require('./public/_limon.bemhtml.js').BEMHTML;

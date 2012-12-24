@@ -35,7 +35,7 @@ template(this.mode === "need-b-chart") {
                         scale: 'b-scale__linear',
                         rangeProvider: {
                             name: 'i-time-range-provider',
-                            period: 600,
+                            period: this.period,
                             updateInterval: 10000
                         },
                         units: "unixtime"
