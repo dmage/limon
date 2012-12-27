@@ -6,6 +6,7 @@ exports = module.exports = function(config) {
         if (/^\/api\/write(\?|$)/.test(req.url)) {
             var object = req.query.object,
                 signal = req.query.signal,
+                timestamp = req.query.timestamp,
                 value = req.query.value;
 
             for (var i = 0; i < config.router.length; ++i) {
@@ -14,7 +15,7 @@ exports = module.exports = function(config) {
                 if (r.test(object)) {
                     for (var j = 0; j < route.processors.length; ++j) {
                         var processor = require(route.processors[j]);
-                        processor(object, signal, value, db);
+                        processor(object, signal, timestamp, value, db);
                     }
                     break;
                 }
@@ -60,9 +61,20 @@ exports = module.exports = function(config) {
                         tag: 'li',
                         content: [
                             {
-                                tag: 'a',
-                                attrs: { href: "/chart?object=" + row.object + "&signal=" + row.signal },
+                                tag: 'span',
                                 content: row.object + ": " + row.signal
+                            },
+                            '&nbsp;',
+                            {
+                                tag: 'a',
+                                attrs: { href: "/chart?object=" + row.object + "&signal=" + row.signal + '&period=3600' },
+                                content: '1h'
+                            },
+                            '&nbsp;',
+                            {
+                                tag: 'a',
+                                attrs: { href: "/chart?object=" + row.object + "&signal=" + row.signal + '&period=86400' },
+                                content: '1d'
                             }
                         ]
                     });

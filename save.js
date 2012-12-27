@@ -1,5 +1,5 @@
-exports = module.exports = function(object, signal, value, conn) {
+exports = module.exports = function(object, signal, timestamp, value, conn) {
     var sql = "INSERT INTO data (object, signal, timestamp, value) VALUES (?, ?, ?, ?)";
-    var bound_values = [object, signal, Math.floor(new Date()/1000), value];
+    var bound_values = [object, signal, timestamp, value];
     conn.query(sql, bound_values);
 }

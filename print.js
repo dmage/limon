@@ -1,3 +1,3 @@
-exports = module.exports = function(object, signal, value) {
-    console.log('object: [', object, '], signal: [', signal, '], value: [', value, ']');
+exports = module.exports = function(object, signal, timestamp, value) {
+    console.log('object: [', object, '], signal: [', signal, '], timestamp: [', timestamp, '] value: [', value, ']');
 }
