@@ -138,6 +138,32 @@ exports = module.exports = function(config) {
                     })));
                 }
             );
+        } else if (/^\/variables(\?|$)/.test(req.url)) {
+            var BEMHTML = require('./public/_limon.bemhtml.js').BEMHTML;
+            var BEMJSON = require('./json2bemjson/limon.xjst.js').apply;
+            var result = [];
+            db.each(
+                "SELECT object, variable, value FROM state ORDER BY object, variable", [],
+                function(row) {
+                    result.push({
+                        tag: 'tr',
+                        content: [
+                            { tag: 'td', attrs: { style: "padding-right:2em" }, content: row.object },
+                            { tag: 'td', attrs: { style: "padding-right:2em" }, content: row.variable },
+                            { tag: 'td', content: row.value }
+                        ]
+                    });
+                },
+                function() {
+                    res.end(BEMHTML.apply(BEMJSON.apply({
+                        mode: "need-b-page",
+                        content: {
+                            tag: 'table',
+                            content: result
+                        }
+                    })));
+                }
+            );
         } else {
             next();
         }
