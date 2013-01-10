@@ -21,6 +21,70 @@ template(this.mode === "need-b-page") {
 }
 
 template(this.mode === "need-b-chart") {
+    var _this = this,
+        object = _this.object,
+        signal = _this.signal;
+
+    var signals = [];
+    signal.split('|').forEach(function(sig) {
+        var yAxisName = "",
+            m = 1;
+        if (sig.indexOf(":") != -1) {
+            yAxisName = sig.split(":", 1);
+            sig = sig.split(":").slice(1).join(":");
+        }
+        if (sig && sig[0] == '-') {
+            sig = sig.substr(1);
+            m = -1;
+        }
+        signals.push({
+            name: sig,
+            m: m,
+            yAxisName: yAxisName
+        });
+    });
+
+    var yAxes = [];
+    signals.forEach(function(sig) {
+        if (yAxes.indexOf(sig.yAxisName) != -1) {
+            return;
+        }
+        yAxes.push(sig.yAxisName);
+    });
+
+    var makeYAxes = function(obj, signal) {
+        var r = [];
+        yAxes.forEach(function(a) {
+            r.push({
+                pos: 'left',
+                scale: 'b-scale__linear',
+                rangeProvider: {
+                    name: 'b-chart__data-range-provider'
+                }
+            });
+        });
+        return r;
+    }
+
+    var makeItems = function(obj, signal) {
+        var r = [];
+        signals.forEach(function(sig) {
+            r.push({
+                name: obj + ": " + sig.name,
+                xAxis: 0,
+                yAxis: yAxes.indexOf(sig.yAxisName),
+                dataProvider: {
+                    name: 'my-data-provider',
+                    object: obj,
+                    signal: sig.name,
+                    multiplier: sig.m,
+                    aggregate: _this.aggregate
+                }
+            });
+        });
+        return r;
+    }
+
     return apply({
         mode: "need-b-page",
         content: {
@@ -36,38 +100,19 @@ template(this.mode === "need-b-chart") {
                         rangeProvider: {
                             name: 'i-time-range-provider',
                             period: this.period,
-                            updateInterval: 10000
+                            updateInterval: (10 + 15*Math.max(0, Math.log(this.period/3600)))*1000
                         },
                         units: "unixtime"
                     }
                 ],
-                yAxes: [
-                    {
-                        pos: 'left',
-                        scale: 'b-scale__linear',
-                        rangeProvider: {
-                            name: 'b-chart__data-range-provider'
-                        }
-                    }
-                ],
-                items: [
-                    {
-                        name: this.object + ": " + this.signal,
-                        xAxis: 0,
-                        yAxis: 0,
-                        color: '#393',
-                        dataProvider: {
-                            name: 'my-data-provider',
-                            object: this.object,
-                            signal: this.signal
-                        }
-                    }
-                ],
+                yAxes: makeYAxes(this.object, this.signal),
+                items: makeItems(this.object, this.signal),
                 overlays: [
                     { name: 'b-chart-overlay__grid' },
                     {
                         name: 'b-chart-overlay__render',
-                        renderName: 'b-chart-render__fill'
+                        renderName: 'b-chart-render__fill',
+                        colorAlpha: 0.8
                     },
                     {
                         name: 'b-chart-overlay__render',

@@ -43,3 +43,36 @@ exports.prototype.each = function each(sql, bound_values, rowCallback, endCallba
         })
         .on('end', endCallback);
 }
+
+exports.prototype.getId = function getId(table, values, callback) {
+    var _this = this;
+
+    var columns = [];
+    var placeholders = [];
+    var boundValues = [];
+    for (var i in values) {
+        columns.push(mysql.escapeId(i));
+        placeholders.push('?');
+        boundValues.push(values[i]);
+    }
+
+    var id;
+
+    var whereSql = columns.map(function(x) { return x + " = ?" }).join(" AND ");
+    var selectSql = "SELECT id FROM " + mysql.escapeId(table) + " WHERE " + whereSql + " LIMIT 1";
+    this.each(selectSql, boundValues, function(row) {
+        id = row.id;
+    }, function() {
+        if (id) {
+            return callback(null, id);
+        }
+
+        var insertSql = "INSERT INTO " + mysql.escapeId(table) + " (" + columns.join(", ") + ") VALUES (" + placeholders.join(", ") + ")";
+        _this.query(insertSql, boundValues, function(err, result) {
+            if (err) {
+                return callback(err);
+            }
+            callback(null, result.insertId);
+        });
+    });
+}

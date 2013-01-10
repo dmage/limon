@@ -41,14 +41,15 @@ BEM.decl('my-data-provider', {
                 object: _this.params.object,
                 signal: _this.params.signal,
                 begin: begin,
-                end: end
+                end: end,
+                aggregate: _this.params.aggregate || 0
             },
             success: function(response) {
                 console.time('fetch');
                 var result = response;//response.result;
                 for (var i = 0, l = result.length; i < l; ++i) {
                     var r = result[i];
-                    data["" + r.timestamp] = r.value;
+                    data["" + r.timestamp] = r.value * (_this.params.multiplier || 1);
                 }
                 console.timeEnd('fetch');
                 _this.trigger('update');
