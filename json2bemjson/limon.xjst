@@ -1,7 +1,19 @@
 template(this.mode === "need-b-page") {
+    var meta = [];
+    if (this.refresh) {
+        meta.push({
+            elem: 'meta',
+            attrs: {
+                'http-equiv': "refresh",
+                'content': this.refresh
+            }
+        });
+    }
+
     return {
         block: 'b-page',
         title: 'Simple chart',
+        meta: meta,
         head: [
             { elem: 'css', url: '_limon.css'},
             { elem: 'css', url: '_limon.ie.css', ie: 'lt IE 8' },

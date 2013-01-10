@@ -157,6 +157,7 @@ exports = module.exports = function(config) {
                 function() {
                     res.end(BEMHTML.apply(BEMJSON.apply({
                         mode: "need-b-page",
+                        refresh: 10,
                         content: {
                             tag: 'table',
                             content: result
